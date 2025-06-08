@@ -3,7 +3,9 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
-import { Pagination } from "swiper/modules";
+import "swiper/css/navigation";
+import "swiper/css/effect-cards";
+import { Pagination, Navigation, EffectCards } from "swiper/modules";
 
 export default function Home() {
   return (
@@ -12,6 +14,8 @@ export default function Home() {
       <BestSellers />
       <Seasonal />
       <WhyPAWNSTYLE />
+      <Testimonials />
+      <Newsletter />
     </div>
   );
 }
@@ -171,15 +175,107 @@ function WhyPAWNSTYLE() {
   );
 }
 
+function Testimonials() {
+  return (
+    <div className="flex flex-col md:mt-32 mt-96 xl:mt-0">
+      <div className="flex justify-center p-0 m-0 w-full relative -z-20">
+        <h1 className="lg:text-[200px] text-6xl p-0 font-mono text-center">
+          Style Trusted
+        </h1>
+      </div>
+      <div className="bg-[var(--background)] flex justify-center items-center pt-4 pb-12 relative lg:-top-15 -top-5">
+        <Swiper
+          modules={[Pagination, Navigation, EffectCards]}
+          effect={"cards"}
+          grabCursor={true}
+          rewind={true}
+          slidesPerView={1}
+          className="max-w-[150px] sm:max-w-[250px] md:max-w-[400px]"
+        >
+          <SwiperSlide>
+            <TesCard />
+          </SwiperSlide>
+          <SwiperSlide>
+            <TesCard />
+          </SwiperSlide>
+          <SwiperSlide>
+            <TesCard />
+          </SwiperSlide>
+          <SwiperSlide>
+            <TesCard />
+          </SwiperSlide>
+          <SwiperSlide>
+            <TesCard />
+          </SwiperSlide>
+        </Swiper>
+      </div>
+    </div>
+  );
+}
+
+function Newsletter() {
+  return (
+    <div className="flex flex-col md:mt-32  md:p-12 p-4 xl:mt-0 ">
+      <div className="flex justify-center p-0 m-0 w-full relative -z-20">
+        <h1 className="lg:text-[200px] text-6xl p-0 font-mono text-center">
+          Style Updates
+        </h1>
+      </div>
+      <div className="bg-[var(--red)] shadow-[8px_12px_0px_0px_var(--foreground)] flex justify-center p-12 items-center rounded pt-32 pb-12 relative lg:-top-15 -top-5">
+        <div>
+          <h1 className="font-mono text-4xl text-center text-[var(--background)]">
+            Get early access to exclusive collections & special offers.
+          </h1>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            className="p-2 rounded-lg w-full h-16 mt-12 bg-[var(--background)] font-sans"
+          />
+          <h1 className="font-sans mt-8 md:text-center text-[var(--background)] opacity-50">
+            ✔️ First access to limited editions - ✔️ Special discounts for
+            members - ✔️ Exclusive pet fashion tips
+          </h1>
+          <div className="bg-[var(--foreground)] select-none p-4 rounded text-[var(--background)] flex justify-center shadow-[3px_3px_0px_0px_var(--background)] items-center w-full cursor-pointer mb-12 mt-8">
+            <h1>Subscribe Now!</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TesCard() {
+  return (
+    <div>
+      <div className="flex flex-col justify-center bg-[var(--background)] items-center border-2 p-4 rounded gap-2">
+        <div className="w-full">
+          <Image
+            src={"/hero.png"}
+            width={4000}
+            height={4000}
+            alt="dog"
+            className="max-w-full"
+          />
+        </div>
+        <div className="flex justify-center items-center flex-col w-full gap-1">
+          <h1 className="font-mono text-xl">Testimonial Title</h1>
+          <p className="font-sans text-sm opacity-70">This is a testimonial.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Card() {
   return (
     <div className="flex flex-col justify-evenly items-center w-full border-2 p-4 rounded gap-2">
       <div className="w-full">
         <Swiper
-          modules={[Pagination]}
+          modules={[Pagination, Navigation]}
           pagination={{
             clickable: true,
           }}
+          rewind={true}
           spaceBetween={10}
           slidesPerView={1}
         >

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+import { PawPrint } from "lucide-react";
+import Footer from "@/components/Footer";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -25,76 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Navbar />
       <body className={`${poppins.variable} ${playfair.variable} antialiased`}>
         {children}
         <Footer />
       </body>
     </html>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="bg-[var(--foreground)] text-[var(--background)] text-sm mt-10">
-      <div className="max-w-screen-xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-6 md:space-y-0">
-          <div>
-            <h2 className="text-xl font-bold mb-2">PAWSTYLE</h2>
-            <p className="[var(--foreground)] opacity-40">
-              Luxury canine fashion designed for elegance and comfort. Elevate
-              your dog's wardrobe with premium craftsmanship.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="[var(--foreground)] opacity-40">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#" className="[var(--foreground)] opacity-40">
-                  Shop
-                </a>
-              </li>
-              <li>
-                <a href="#" className="[var(--foreground)] opacity-40">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="[var(--foreground)] opacity-40">
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Contact</h3>
-            <ul className="space-y-2">
-              <li>
-                <span>Phone: +1 (800) 555-1234</span>
-              </li>
-              <li>
-                <span>Email: support@pawstyle.com</span>
-              </li>
-              <li>
-                <span>Address: 123 Fashion Ave, New York, NY, USA</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-8 border-t border-[var(--background)] pt-4 text-center">
-          <h1 className="text-[var(--background)] opacity-50">
-            © 2025 PAWSTYLE. All rights reserved.
-          </h1>
-        </div>
-      </div>
-    </footer>
   );
 }

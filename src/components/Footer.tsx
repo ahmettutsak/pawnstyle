@@ -6,7 +6,7 @@ import { PawPrint } from "lucide-react";
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   return (
-    <footer className="bg-[var(--foreground)] text-[var(--background)] text-sm mt-10">
+    <footer className="w-full bg-[var(--foreground)] text-[var(--background)] text-sm mt-10">
       <div className="max-w-screen-xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-start space-y-6 md:space-y-0">
           <div className="font-sans">

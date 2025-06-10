@@ -104,6 +104,7 @@ export default function Shop() {
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredProducts.map((product) => (
             <Card
+              id={product.id}
               key={product.id}
               images={product.images}
               name={product.name}

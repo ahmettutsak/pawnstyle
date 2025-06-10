@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, User, Menu, X, PawPrint } from "lucide-react";
+import UserMenu from "./UserMenu";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -27,9 +28,7 @@ export default function Navbar() {
                 2
               </span>
             </Link>
-            <Link href="/account" className="text-[var(--foreground)]">
-              <User size={24} />
-            </Link>
+            <UserMenu isLoggedIn={true} />
 
             <button
               className="text-[var(--foreground)] focus:outline-none"

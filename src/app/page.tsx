@@ -7,6 +7,7 @@ import "swiper/css/navigation";
 import "swiper/css/effect-cards";
 import { Pagination, Navigation, EffectCards } from "swiper/modules";
 import Card from "@/components/Card";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -32,9 +33,11 @@ function Hero() {
           Discover high-end canine fashion designed for comfort, elegance, and
           everyday sophistication.
         </p>
-        <div className="bg-[var(--red)] p-4 rounded text-[var(--background)] flex justify-center items-center max-w-52 cursor-pointer shadow-[6px_6px_0px_0px_var(--foreground)]">
-          <h1 className="font-sans select-auto">Explore the Collection</h1>
-        </div>
+        <Link href="/shop">
+          <div className="bg-[var(--red)] p-4 rounded text-[var(--background)] flex justify-center items-center max-w-52 cursor-pointer shadow-[6px_6px_0px_0px_var(--foreground)]">
+            <h1 className="font-sans select-auto">Explore the Collection</h1>
+          </div>
+        </Link>
       </div>
 
       <div className="flex justify-center items-center xl:max-h-screen xl:w-full">
@@ -58,6 +61,7 @@ function BestSellers() {
       </div>
       <div className="bg-[var(--background)] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 px-8 gap-8 pt-4 pb-12 relative lg:-top-15 -top-5">
         <Card
+          id={1}
           images={["/hero.png", "/hero.png", "/hero.png"]}
           name="Cart Curt Car"
           price={12}
@@ -65,6 +69,7 @@ function BestSellers() {
           count={100}
         />
         <Card
+          id={2}
           images={["/hero.png", "/hero.png", "/hero.png"]}
           name="Cart Curt Car"
           price={12}
@@ -72,6 +77,7 @@ function BestSellers() {
           count={100}
         />
         <Card
+          id={1}
           images={["/hero.png", "/hero.png", "/hero.png"]}
           name="Cart Curt Car"
           price={12}
@@ -79,6 +85,7 @@ function BestSellers() {
           count={100}
         />
         <Card
+          id={1}
           images={["/hero.png", "/hero.png", "/hero.png"]}
           name="Cart Curt Car"
           price={12}
@@ -86,6 +93,7 @@ function BestSellers() {
           count={100}
         />
         <Card
+          id={1}
           images={["/hero.png", "/hero.png", "/hero.png"]}
           name="Cart Curt Car"
           price={12}

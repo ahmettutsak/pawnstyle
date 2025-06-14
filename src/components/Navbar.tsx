@@ -1,12 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, User, Menu, X, PawPrint } from "lucide-react";
 import UserMenu from "./UserMenu";
 
+type CartItem = {
+  id: number;
+  quantity: number;
+  size: string;
+};
+
+function getCart(): CartItem[] {
+  if (typeof window === "undefined") return [];
+  const cart = localStorage.getItem("cart");
+  return cart ? JSON.parse(cart) : [];
+}
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const updateCount = () => {
+      const cart = getCart();
+      const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+      setCount(total);
+    };
+
+    updateCount();
+
+    window.addEventListener("storage", updateCount);
+    window.addEventListener("cartUpdated", updateCount);
+
+    return () => {
+      window.removeEventListener("storage", updateCount);
+      window.removeEventListener("cartUpdated", updateCount);
+    };
+  }, []);
 
   return (
     <nav className="bg-[var(--background)] shadow-md fixed w-full z-20 top-0 left-0">
@@ -24,9 +55,11 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             <Link href="/cart" className="text-[var(--foreground)] relative">
               <ShoppingCart size={24} />
-              <span className="absolute -top-1 -right-1 bg-[var(--red)] text-[var(--background)] text-xs rounded-full px-1.5 py-0.5">
-                2
-              </span>
+              {count > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[var(--red)] text-[var(--background)] text-xs rounded-full px-1.5 py-0.5">
+                  {count}
+                </span>
+              )}
             </Link>
             <UserMenu isLoggedIn={true} />
 

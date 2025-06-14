@@ -9,7 +9,7 @@ interface CardProps {
   price: number;
   stars: number | string;
   count: number;
-  id: number; // ürün detay sayfasına geçiş için id prop ekledik
+  id: number;
 }
 
 export default function Card({
@@ -22,8 +22,6 @@ export default function Card({
 }: CardProps) {
   return (
     <Link href={`/product/${id}`} className="block">
-      {" "}
-      {/* Card'ı Link ile sarıyoruz */}
       <div className="flex flex-col justify-evenly items-center w-full border-2 p-4 rounded gap-2 cursor-pointer">
         <div className="w-full">
           <Swiper

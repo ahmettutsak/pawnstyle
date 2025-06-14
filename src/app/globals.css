@@ -5,6 +5,8 @@
   --foreground: #222222;
   --red: #a52a2a;
   --gray: #a8a8a8;
+  --green: #228b22;
+  --yellow: #ffbf00;
 }
 
 @theme inline {

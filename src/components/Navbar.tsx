@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, User, Menu, X, PawPrint } from "lucide-react";
 import UserMenu from "./UserMenu";
+import { usePathname } from "next/navigation";
 
 type CartItem = {
   id: number;
@@ -20,6 +21,23 @@ function getCart(): CartItem[] {
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [count, setCount] = useState(0);
+
+  const pathname = usePathname();
+
+  const isAdmin = pathname?.startsWith("/admin");
+  if (isAdmin) return null;
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const updateCount = () => {
@@ -75,7 +93,10 @@ export default function Navbar() {
       </div>
 
       {menuOpen && (
-        <div className="bg-[var(--background)] shadow-md border-t border-[var(--foreground)] rounded-b-lg px-6 py-6">
+        <div
+          ref={menuRef}
+          className="bg-[var(--background)] shadow-md border-t border-[var(--foreground)] rounded-b-lg px-6 py-6"
+        >
           <div className="space-y-12 flex flex-col items-center md:items-start">
             <Link
               href="/"

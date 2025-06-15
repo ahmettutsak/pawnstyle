@@ -47,11 +47,6 @@ export default function UserMenu({ isLoggedIn }: UserMenuProps) {
                 </Link>
               </li>
               <li>
-                <Link href="/account/settings" onClick={() => setOpen(false)}>
-                  Settings
-                </Link>
-              </li>
-              <li>
                 <button
                   onClick={() => {
                     setOpen(false);

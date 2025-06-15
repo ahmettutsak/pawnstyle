@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { PawPrint } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  const isAdmin = pathname?.startsWith("/admin");
+  if (isAdmin) return null;
   return (
     <footer className="w-full bg-[var(--foreground)] text-[var(--background)] text-sm mt-10">
       <div className="max-w-screen-xl mx-auto px-4 py-8 sm:px-6 lg:px-8">

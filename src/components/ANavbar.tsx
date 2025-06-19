@@ -10,7 +10,7 @@ export default function ANavbar() {
         <Link href="/admin">Dashboard</Link>
         <Link href="/admin/products">Products</Link>
         <Link href="/admin/orders">Orders</Link>
-        <Link href="/admin/messages">Messages</Link>
+        <Link href="/">Homepage</Link>
       </nav>
     </aside>
   );

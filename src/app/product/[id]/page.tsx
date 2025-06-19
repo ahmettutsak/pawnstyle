@@ -1,73 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { notFound } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper/modules";
-import { useSearchParams, useRouter } from "next/navigation";
+
+import { supabase } from "@/lib/supabase/supabase";
 
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 
-const mockProducts = [
-  {
-    id: 1,
-    name: "Cozy Dog Sweater",
-    price: 25.99,
-    stars: 4.7,
-    count: 120,
-    description:
-      "A warm and stylish sweater to keep your dog cozy during chilly walks.",
-    images: ["/hero.png", "/hero.png", "/hero.png"],
-  },
-  {
-    id: 2,
-    name: "Raincoat for Dogs",
-    price: 30.0,
-    stars: 4.2,
-    count: 89,
-    description:
-      "Water-resistant and lightweight. Perfect for rainy day adventures.",
-    images: ["/hero.png", "/hero.png", "/hero.png"],
-  },
-];
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  stars: number;
+  count: number;
+  description: string;
+  images: string[];
+};
 
-const mockReviews = [
-  {
-    productId: 1,
-    name: "Emily R.",
-    rating: 4,
-    comment:
-      "The sweater fits my French Bulldog perfectly! Super cozy and easy to put on. Definitely coming back for more.",
-  },
-  {
-    productId: 1,
-    name: "Liam D.",
-    rating: 5,
-    comment: "Amazing quality. My dog loves it and looks adorable!",
-  },
-  {
-    productId: 2,
-    name: "James K.",
-    rating: 5,
-    comment:
-      "Raincoat is super helpful on rainy days. Keeps my dog dry and happy. Quality is excellent.",
-  },
-  {
-    productId: 2,
-    name: "Sophia M.",
-    rating: 4,
-    comment: "It fits well and works great. Would love more color options.",
-  },
-];
-
-interface ProductPageProps {
-  params: {
-    id: string;
-  };
-}
+type ProductSize = {
+  size: string;
+  stock: number;
+};
 
 type CartItem = {
   id: number;
@@ -89,24 +47,96 @@ function setCart(cart: CartItem[]) {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
+interface ProductPageProps {
+  params: {
+    id: string;
+  };
+}
+
 export default function ProductPage({ params }: ProductPageProps) {
   const productId = Number(params.id);
-  const product = mockProducts.find((p) => p.id === productId);
-  const reviews = mockReviews.filter((r) => r.productId === productId);
-
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const initialSize = searchParams.get("size") || "M";
-  const initialQuantity = Number(searchParams.get("quantity")) || 1;
-
-  const [size, setSize] = useState<string>(initialSize);
-  const [quantity, setQuantity] = useState<number>(initialQuantity);
-  const [addedToCart, setAddedToCart] = useState<boolean>(false);
-
-  if (!product) return notFound();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [sizes, setSizes] = useState<ProductSize[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [size, setSize] = useState<string>(searchParams.get("size") || "M");
+  const [quantity, setQuantity] = useState<number>(
+    Number(searchParams.get("quantity")) || 1
+  );
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
+    async function fetchProduct() {
+      setLoading(true);
+
+      // Ürün bilgisi çek
+      const { data: productData, error: productError } = await supabase
+        .from("products")
+        .select("id, name, price, description, images")
+        .eq("id", productId)
+        .single();
+
+      if (productError || !productData) {
+        router.push("/404");
+        return;
+      }
+
+      // Yorum bilgisi çek
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from("reviews")
+        .select("stars")
+        .eq("product_id", productId);
+
+      if (reviewsError) {
+        console.error("Reviews fetch error:", reviewsError);
+      }
+
+      let averageStars = 0;
+      let reviewsCount = 0;
+      if (reviewsData && reviewsData.length > 0) {
+        reviewsCount = reviewsData.length;
+        averageStars =
+          reviewsData.reduce((sum, r) => sum + (r.stars || 0), 0) /
+          reviewsCount;
+      }
+
+      const productWithReviews: Product = {
+        ...productData,
+        stars: Math.round(averageStars),
+        count: reviewsCount,
+      };
+
+      setProduct(productWithReviews);
+
+      // Stokta olan bedenleri çek
+      const { data: sizeData, error: sizeError } = await supabase
+        .from("product_sizes")
+        .select("size, stock")
+        .eq("product_id", productId)
+        .gt("stock", 0);
+
+      if (sizeError) {
+        console.error("Size fetch error:", sizeError);
+      }
+
+      setSizes(sizeData || []);
+      setLoading(false);
+    }
+
+    fetchProduct();
+  }, [productId, router]);
+
+  useEffect(() => {
+    // Mevcut beden listesinde seçili beden yoksa ilkini kullan
+    if (sizes.length > 0 && !sizes.find((s) => s.size === size)) {
+      setSize(sizes[0].size);
+    }
+  }, [sizes]);
+
+  useEffect(() => {
+    // URL query param güncelle
     const params = new URLSearchParams(window.location.search);
     params.set("size", size);
     params.set("quantity", quantity.toString());
@@ -114,6 +144,9 @@ export default function ProductPage({ params }: ProductPageProps) {
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     router.replace(newUrl, { scroll: false });
   }, [size, quantity, router]);
+
+  if (loading) return <p className="text-center py-10">Loading...</p>;
+  if (!product) return <p className="text-center py-10">Product not found</p>;
 
   const handleAddToCart = () => {
     const cart = getCart();
@@ -132,9 +165,8 @@ export default function ProductPage({ params }: ProductPageProps) {
         image: product.images[0],
       });
     }
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("cartUpdated"));
     setCart(cart);
+    window.dispatchEvent(new Event("cartUpdated"));
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
@@ -178,7 +210,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           </p>
 
           <p className="text-sm font-sans opacity-60">
-            {product.stars} ★ ({product.count} reviews)
+            {renderStars(product.stars)} ({product.count} reviews)
           </p>
 
           <div className="h-1 w-full bg-[var(--gray)] rounded" />
@@ -198,11 +230,11 @@ export default function ProductPage({ params }: ProductPageProps) {
                 onChange={(e) => setSize(e.target.value)}
                 className="border border-[var(--foreground)] bg-[var(--background)] text-[var(--foreground)] px-4 py-2 rounded font-sans w-full sm:w-32"
               >
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
+                {sizes.map((s) => (
+                  <option key={s.size} value={s.size}>
+                    {s.size}
+                  </option>
+                ))}
               </select>
               <p className="text-sm text-[var(--foreground)] opacity-70">
                 Size Guide: XS (Chihuahua), S (Pomeranian), M (Beagle), L
@@ -218,10 +250,20 @@ export default function ProductPage({ params }: ProductPageProps) {
                 id="quantity"
                 type="number"
                 min={1}
+                max={sizes.find((s) => s.size === size)?.stock || 1}
                 value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
+                onChange={(e) => {
+                  const newValue = Number(e.target.value);
+                  const maxStock =
+                    sizes.find((s) => s.size === size)?.stock || 1;
+                  setQuantity(Math.min(newValue, maxStock));
+                }}
                 className="border border-[var(--foreground)] bg-[var(--background)] text-[var(--foreground)] px-4 py-2 rounded font-sans w-full sm:w-20"
               />
+              <p className="text-sm text-[var(--foreground)] opacity-70">
+                Stock available:{" "}
+                {sizes.find((s) => s.size === size)?.stock || 0}
+              </p>
             </div>
           </div>
 
@@ -237,58 +279,6 @@ export default function ProductPage({ params }: ProductPageProps) {
               ✅ Added to cart!
             </p>
           )}
-        </div>
-      </div>
-
-      <div className="mt-16">
-        <h2 className="text-2xl font-mono text-[var(--foreground)] mb-6">
-          You might also like
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {mockProducts
-            .filter((p) => p.id !== product.id)
-            .map((related) => (
-              <div
-                key={related.id}
-                className="flex flex-col justify-evenly items-center w-full border-2 p-4 rounded gap-2"
-              >
-                <div className="w-full">
-                  <Image
-                    src={related.images[0]}
-                    alt={related.name}
-                    width={800}
-                    height={800}
-                    className="rounded w-full h-auto object-contain"
-                    priority
-                  />
-                </div>
-                <div className="flex justify-between w-full font-mono text-lg mt-2">
-                  <h3>{related.name}</h3>
-                  <p>${related.price.toFixed(2)}</p>
-                </div>
-              </div>
-            ))}
-        </div>
-      </div>
-
-      <div className="mt-16">
-        <h2 className="text-2xl font-mono text-[var(--foreground)] mb-6">
-          Customer Reviews
-        </h2>
-        <div className="flex flex-col gap-6">
-          {reviews.map((r, idx) => (
-            <div key={idx} className="border border-[var(--gray)] rounded p-4">
-              <div className="flex justify-between items-center mb-2">
-                <p className="font-mono text-[var(--foreground)]">{r.name}</p>
-                <p className="text-yellow-400 text-sm">
-                  {renderStars(r.rating)}
-                </p>
-              </div>
-              <p className="text-sm text-[var(--foreground)] opacity-70">
-                {r.comment}
-              </p>
-            </div>
-          ))}
         </div>
       </div>
     </div>

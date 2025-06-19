@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { User } from "lucide-react";
+import { supabase } from "@/lib/supabase/supabase";
 
 interface UserMenuProps {
   isLoggedIn: boolean;
@@ -49,7 +50,7 @@ export default function UserMenu({ isLoggedIn }: UserMenuProps) {
               <li>
                 <button
                   onClick={() => {
-                    setOpen(false);
+                    supabase.auth.signOut();
                   }}
                   className="text-left w-full"
                 >

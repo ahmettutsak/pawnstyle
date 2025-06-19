@@ -1,10 +1,10 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, User, Menu, X, PawPrint } from "lucide-react";
 import UserMenu from "./UserMenu";
 import { usePathname } from "next/navigation";
+import { supabase } from "@/lib/supabase/supabase";
 
 type CartItem = {
   id: number;
@@ -21,6 +21,7 @@ function getCart(): CartItem[] {
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [count, setCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const pathname = usePathname();
 
@@ -57,6 +58,24 @@ export default function Navbar() {
     };
   }, []);
 
+  // Supabase oturum kontrolü
+  useEffect(() => {
+    const session = supabase.auth.getSession().then(({ data }) => {
+      setIsLoggedIn(!!data.session);
+    });
+
+    // Oturum değişikliklerini dinle
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsLoggedIn(!!session);
+      }
+    );
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <nav className="bg-[var(--background)] shadow-md fixed w-full z-20 top-0 left-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,7 +85,7 @@ export default function Navbar() {
               href="/"
               className="text-[var(--foreground)] text-2xl font-bold"
             >
-              {<PawPrint size={32} className="inline-block mr-2" />}
+              <PawPrint size={32} className="inline-block mr-2" />
             </Link>
           </div>
 
@@ -79,7 +98,9 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <UserMenu isLoggedIn={true} />
+
+            {/* isLoggedIn durumunu UserMenu'ye gönder */}
+            <UserMenu isLoggedIn={isLoggedIn} />
 
             <button
               className="text-[var(--foreground)] focus:outline-none"

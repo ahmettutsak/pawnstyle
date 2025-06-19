@@ -8,6 +8,8 @@ import "swiper/css/effect-cards";
 import { Pagination, Navigation, EffectCards } from "swiper/modules";
 import Card from "@/components/Card";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/supabase";
 
 export default function Home() {
   return (
@@ -53,53 +55,98 @@ function Hero() {
   );
 }
 
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  discount: number;
+  images: string[];
+  stars: number;
+  count: number;
+};
+
 function BestSellers() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchBest() {
+      setLoading(true);
+
+      const { data: bestData, error: bestError } = await supabase
+        .from("best_products")
+        .select("product_id");
+
+      if (bestError || !bestData) {
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      const productIds = bestData.map((item) => item.product_id);
+
+      if (productIds.length === 0) {
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: productData, error: productError } = await supabase
+        .from("products")
+        .select("id, name, price, discount, images")
+        .in("id", productIds);
+
+      if (productError || !productData) {
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      const mapped: Product[] = productData.map((prod) => ({
+        id: prod.id,
+        name: prod.name,
+        price: prod.price,
+        discount: prod.discount ?? 0,
+        images: prod.images ?? [],
+        stars: 4.5,
+        count: 100,
+      }));
+
+      setProducts(mapped);
+      setLoading(false);
+    }
+
+    fetchBest();
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col mt-32 xl:mt-0">
       <div className="flex justify-center p-0 m-0 w-full relative -z-20">
         <h1 className="lg:text-[200px] text-6xl p-0 font-mono">Best Sellers</h1>
       </div>
+
       <div className="bg-[var(--background)] grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 px-8 gap-8 pt-4 pb-12 relative lg:-top-15 -top-5">
-        <Card
-          id={1}
-          images={["/hero.png", "/hero.png", "/hero.png"]}
-          name="Cart Curt Car"
-          price={12}
-          stars={4.5}
-          count={100}
-        />
-        <Card
-          id={2}
-          images={["/hero.png", "/hero.png", "/hero.png"]}
-          name="Cart Curt Car"
-          price={12}
-          stars={4.5}
-          count={100}
-        />
-        <Card
-          id={1}
-          images={["/hero.png", "/hero.png", "/hero.png"]}
-          name="Cart Curt Car"
-          price={12}
-          stars={4.5}
-          count={100}
-        />
-        <Card
-          id={1}
-          images={["/hero.png", "/hero.png", "/hero.png"]}
-          name="Cart Curt Car"
-          price={12}
-          stars={4.5}
-          count={100}
-        />
-        <Card
-          id={1}
-          images={["/hero.png", "/hero.png", "/hero.png"]}
-          name="Cart Curt Car"
-          price={12}
-          stars={4.5}
-          count={100}
-        />
+        {loading ? (
+          <div className="col-span-full text-center text-gray-500 py-12">
+            Loading...
+          </div>
+        ) : products.length === 0 ? (
+          <div className="col-span-full text-center text-gray-500 py-12">
+            No best sellers found.
+          </div>
+        ) : (
+          products.map((product) => (
+            <Card
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              images={product.images}
+              price={product.price}
+              stars={product.stars}
+              count={product.count}
+            />
+          ))
+        )}
       </div>
     </div>
   );
